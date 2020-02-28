@@ -1,11 +1,14 @@
 let Jimp = require("jimp");
 let PackProcessor = require("./PackProcessor");
 let TextureRenderer = require("./utils/TextureRenderer");
-let tinify = require("tinify");
 let startExporter = require("./exporters/index").startExporter;
+const imagemin = require('imagemin');
+const imageminPngquant = require('imagemin-pngquant');
+const imageminJpegoptim = require('imagemin-jpegoptim');
+
 
 class FilesProcessor {
-    
+
     static start(images, options, callback, errorCallback) {
         PackProcessor.pack(images, options,
             (res) => {
@@ -13,22 +16,22 @@ class FilesProcessor {
                 let resFiles = [];
                 let readyParts = 0;
 
-                for(let data of res) {
+                for (let data of res) {
                     new TextureRenderer(data, options, (renderResult) => {
                         packResult.push({
                             data: renderResult.data,
                             buffer: renderResult.buffer
                         });
 
-                        if(packResult.length >= res.length) {
+                        if (packResult.length >= res.length) {
                             let ix = 0;
-                            for(let item of packResult) {
+                            for (let item of packResult) {
                                 let fName = options.textureName + (packResult.length > 1 ? "-" + ix : "");
 
                                 FilesProcessor.processPackResultItem(fName, item, options, (files) => {
                                     resFiles = resFiles.concat(files);
                                     readyParts++;
-                                    if(readyParts >= packResult.length) {
+                                    if (readyParts >= packResult.length) {
                                         callback(resFiles);
                                     }
                                 });
@@ -40,10 +43,10 @@ class FilesProcessor {
                 }
             },
             (error) => {
-                if(errorCallback) errorCallback(error);
+                if (errorCallback) errorCallback(error);
             });
     }
-    
+
     static processPackResultItem(fName, item, options, callback) {
         let files = [];
 
@@ -51,7 +54,7 @@ class FilesProcessor {
         let mime = options.textureFormat == "png" ? Jimp.MIME_PNG : Jimp.MIME_JPEG;
 
         item.buffer.getBuffer(mime, (err, srcBuffer) => {
-            FilesProcessor.tinifyImage(srcBuffer, options, (buffer) => {
+            FilesProcessor.optimizeImage(srcBuffer, options, (buffer) => {
                 let opts = {
                     imageName: fName + "." + options.textureFormat,
                     imageData: buffer.toString("base64"),
@@ -66,13 +69,13 @@ class FilesProcessor {
                     appInfo: options.appInfo,
                     trimMode: options.trimMode
                 };
-                
+
                 files.push({
                     name: fName + "." + options.exporter.fileExt,
                     buffer: Buffer.from(startExporter(options.exporter, item.data, opts))
                 });
 
-                if(!options.base64Export) {
+                if (!options.base64Export) {
                     files.push({
                         name: fName + "." + options.textureFormat,
                         buffer: buffer
@@ -83,19 +86,20 @@ class FilesProcessor {
             });
         });
     }
-    
-    static tinifyImage(buffer, options, callback) {
-        if(!options.tinify) {
+
+    static optimizeImage(buffer, options, callback) {
+        if (!options.optimize) {
             callback(buffer);
             return;
         }
 
-        tinify.key = options.tinifyKey;
+        imagemin.buffer(buffer, {
+            plugins: [
+                imageminPngquant(options.optimizeOptions),
+                imageminJpegoptim()
+            ]
+        }).then(result => callback(result));
 
-        tinify.fromBuffer(buffer).toBuffer(function(err, result) {
-            if (err) throw err;
-            callback(result);
-        });
     }
 }
 

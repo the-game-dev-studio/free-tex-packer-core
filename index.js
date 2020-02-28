@@ -14,17 +14,17 @@ function fixPath(path) {
 }
 
 function loadImage(file, files) {
-	return Jimp.read(file.contents)
-		.then(image => {
-			image.name = fixPath(file.path);
-			image._base64 = file.contents.toString("base64");
-			image.width = image.bitmap.width;
-			image.height = image.bitmap.height;
-			files[image.name] = image;
-		})
-		.catch(e => {
-			console.error(getErrorDescription("Error reading " + file.path));
-		});
+    return Jimp.read(file.contents)
+        .then(image => {
+            image.name = fixPath(file.path);
+            image._base64 = file.contents.toString("base64");
+            image.width = image.bitmap.width;
+            image.height = image.bitmap.height;
+            files[image.name] = image;
+        })
+        .catch(e => {
+            console.error(getErrorDescription("Error reading " + file.path));
+        });
 }
 
 function packAsync(images, options) {
@@ -52,41 +52,43 @@ function packAsync(images, options) {
     options.tinify = options.tinify === undefined ? false : options.tinify;
     options.tinifyKey = options.tinifyKey === undefined ? "" : options.tinifyKey;
     options.filter = options.filter === undefined ? "none" : options.filter;
+    options.optimize = options.optimize === undefined ? false : options.optimize;
+    options.optimizeOptions = options.optimizeOptions === undefined ? {} : options.optimizeOptions;
+    options.variants = options.variants === undefined ? [] : options.variants;
 
-    if(!options.packer) options.packer = "MaxRectsBin";
-    if(!options.exporter) options.exporter = "JsonHash";
+    if (!options.packer) options.packer = "MaxRectsBin";
+    if (!options.exporter) options.exporter = "JsonHash";
 
     let packer = getPackerByType(options.packer);
-    if(!packer) {
+    if (!packer) {
         throw new Error(getErrorDescription("Unknown packer " + options.packer));
     }
 
-    if(!options.packerMethod) {
+    if (!options.packerMethod) {
         options.packerMethod = packer.defaultMethod;
     }
 
     let packerMethod = packer.getMethodByType(options.packerMethod);
-    if(!packerMethod) {
+    if (!packerMethod) {
         throw new Error(getErrorDescription("Unknown packer method " + options.packerMethod));
     }
 
     let exporter;
-    if(typeof options.exporter == "string") {
+    if (typeof options.exporter == "string") {
         exporter = getExporterByType(options.exporter);
-    }
-    else {
+    } else {
         exporter = options.exporter;
     }
 
-	if(!exporter.allowRotation) options.allowRotation = false;
-	if(!exporter.allowTrim) options.allowTrim = false;
+    if (!exporter.allowRotation) options.allowRotation = false;
+    if (!exporter.allowTrim) options.allowTrim = false;
 
-    if(!exporter) {
+    if (!exporter) {
         throw new Error(getErrorDescription("Unknown exporter " + options.exporter));
     }
 
     let filter = getFilterByType(options.filter);
-    if(!filter) {
+    if (!filter) {
         throw new Error(getErrorDescription("Unknown filter " + options.filter));
     }
 
@@ -95,12 +97,12 @@ function packAsync(images, options) {
     options.exporter = exporter;
     options.filter = filter;
 
-	let files = {};
-	let p = [];
+    let files = {};
+    let p = [];
 
-	for(let file of images) {
-		p.push(loadImage(file, files));
-	}
+    for (let file of images) {
+        p.push(loadImage(file, files));
+    }
 
     return new Promise((resolve, reject) =>
         Promise.all(p)

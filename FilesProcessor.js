@@ -53,6 +53,7 @@ class FilesProcessor {
         let pixelFormat = options.textureFormat == "png" ? "RGBA8888" : "RGB888";
         let mime = options.textureFormat == "png" ? Jimp.MIME_PNG : Jimp.MIME_JPEG;
 
+
         item.buffer.getBuffer(mime, (err, srcBuffer) => {
             FilesProcessor.optimizeImage(srcBuffer, options, (buffer) => {
                 let opts = {
@@ -69,7 +70,6 @@ class FilesProcessor {
                     appInfo: options.appInfo,
                     trimMode: options.trimMode
                 };
-
                 files.push({
                     name: fName + "." + options.exporter.fileExt,
                     buffer: Buffer.from(startExporter(options.exporter, item.data, opts))
@@ -81,8 +81,18 @@ class FilesProcessor {
                         buffer: buffer
                     });
                 }
-
-                callback(files);
+                if (options.sdVariant) {
+                    item.buffer.scale(0.5).getBuffer(mime, (err, srcBuffer) => {
+                        FilesProcessor.optimizeImage(srcBuffer, options, (buffer) => {
+                            files.push({
+                                name: fName + "@0.5x" + options.textureFormat,
+                                buffer: buffer
+                            });
+                        })
+                    })
+                } else {
+                    callback(files);
+                }
             });
         });
     }

@@ -55,7 +55,7 @@ class FilesProcessor {
 
         const onComplete = () => {
             if (options.sdVariant) {
-                item.buffer.scale(0.5).getBuffer(mime, (err, srcBuffer) => {
+                item.buffer.scale(0.5, Jimp.RESIZE_BICUBIC).getBuffer(mime, (err, srcBuffer) => {
                     FilesProcessor.optimizeImage(srcBuffer, options, (buffer) => {
                         files.push({
                             name: fName + "@0.5x." + options.textureFormat,

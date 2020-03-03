@@ -85,9 +85,10 @@ class FilesProcessor {
                     item.buffer.scale(0.5).getBuffer(mime, (err, srcBuffer) => {
                         FilesProcessor.optimizeImage(srcBuffer, options, (buffer) => {
                             files.push({
-                                name: fName + "@0.5x" + options.textureFormat,
+                                name: fName + "@0.5x." + options.textureFormat,
                                 buffer: buffer
                             });
+                            callback(files);
                         })
                     })
                 } else {

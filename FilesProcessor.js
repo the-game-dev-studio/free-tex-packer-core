@@ -55,14 +55,14 @@ class FilesProcessor {
 
         const onComplete = () => {
             if (options.sdVariant) {
-                item.buffer.scale(0.5, Jimp.RESIZE_BICUBIC).getBuffer(mime, (err, srcBuffer) => {
-                    // FilesProcessor.optimizeImage(srcBuffer, options, (buffer) => {
+                item.buffer.scale(0.5, Jimp.RESIZE_BILINEAR).getBuffer(mime, (err, srcBuffer) => {
+                    FilesProcessor.optimizeImage(srcBuffer, options, (buffer) => {
                         files.push({
                             name: fName + "@0.5x." + options.textureFormat,
                             buffer: srcBuffer
                         });
                         callback(files);
-                    // })
+                    })
                 })
             } else {
                 callback(files);

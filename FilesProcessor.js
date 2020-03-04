@@ -4,7 +4,6 @@ let TextureRenderer = require("./utils/TextureRenderer");
 let startExporter = require("./exporters/index").startExporter;
 const imagemin = require('imagemin');
 const imageminPngquant = require('imagemin-pngquant');
-const imageminOptipng = require('imagemin-optipng');
 const imageminJpegoptim = require('imagemin-jpegoptim');
 
 
@@ -111,8 +110,7 @@ class FilesProcessor {
 
         imagemin.buffer(buffer, {
             plugins: [
-                // imageminPngquant(options.optimizeOptions),
-                imageminOptipng(),
+                imageminPngquant(options.optimizeOptions),
                 imageminJpegoptim()
             ]
         }).then(result => callback(result));

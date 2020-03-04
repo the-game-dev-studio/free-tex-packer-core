@@ -110,7 +110,7 @@ class FilesProcessor {
 
         imagemin.buffer(buffer, {
             plugins: [
-                imageminPngquant(options.optimizeOptions),
+                imageminPngquant({speed: 10, ...options.optimizeOptions}),
                 imageminJpegoptim()
             ]
         }).then(result => callback(result));
